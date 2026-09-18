@@ -54,17 +54,9 @@
     var giorni = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
     var mesi = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
 
-    // IMPPOSTA QUI L'OFFSET PER ROMA:
-    // Metti 2 durante l'ora legale (da fine marzo a fine ottobre)
-    // Metti 1 durante l'ora solare (da fine ottobre a fine marzo)
-    var offsetOre = 2; 
-
     function updateClock() {
-      var d = new Date();
-      
-      // Calcola il tempo in millisecondi in formato UTC e aggiunge l'offset desiderato
-      var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-      var now = new Date(utc + (3600000 * offsetOre));
+      // Legge direttamente l'orario impostato sul Kindle
+      var now = new Date();
 
       var h = now.getHours();
       var m = now.getMinutes();
