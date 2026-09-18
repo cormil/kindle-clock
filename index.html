@@ -55,21 +55,26 @@
     var mesi = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
 
     function updateClock() {
-      // Legge direttamente l'orario impostato sul Kindle
-      var now = new Date();
+      var d = new Date();
+      
+      // Se il browser legge l'ora in UTC (offset 0), forza l'ora di Roma (+2 per ora legale, +1 per solare)
+      if (d.getTimezoneOffset() === 0) {
+        var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+        d = new Date(utc + (3600000 * 2)); // Cambia in 1 durante l'ora solare
+      }
 
-      var h = now.getHours();
-      var m = now.getMinutes();
+      var h = d.getHours();
+      var m = d.getMinutes();
       
       if (h < 10) { h = '0' + h; }
       if (m < 10) { m = '0' + m; }
       
       document.getElementById('clock').innerHTML = h + ':' + m;
 
-      var giornoSettimana = giorni[now.getDay()];
-      var giornoMese = now.getDate();
-      var mese = mesi[now.getMonth()];
-      var anno = now.getFullYear();
+      var giornoSettimana = giorni[d.getDay()];
+      var giornoMese = d.getDate();
+      var mese = mesi[d.getMonth()];
+      var anno = d.getFullYear();
 
       document.getElementById('date').innerHTML = giornoSettimana + ', ' + giornoMese + ' ' + mese + ' ' + anno;
     }
