@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="60">
+  <title>Kindle Clock</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #ffffff;
+      color: #000000;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #clock {
+      font-size: 28vw;
+      font-weight: bold;
+      letter-spacing: -2px;
+    }
+  </style>
+</head>
+<body>
+  <div id="clock">--:--</div>
+  <script>
+    function updateClock() {
+      var now = new Date();
+      var hours = String(now.getHours()).padStart(2, '0');
+      var minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('clock').textContent = hours + ':' + minutes;
+    }
+    updateClock();
+  </script>
+</body>
+</html>
