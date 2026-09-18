@@ -29,9 +29,14 @@
   <script>
     function updateClock() {
       var now = new Date();
-      var hours = String(now.getHours()).padStart(2, '0');
-      var minutes = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('clock').textContent = hours + ':' + minutes;
+      var h = now.getHours();
+      var m = now.getMinutes();
+      
+      // Formattazione compatibile con vecchi browser
+      if (h < 10) { h = '0' + h; }
+      if (m < 10) { m = '0' + m; }
+      
+      document.getElementById('clock').innerHTML = h + ':' + m;
     }
     updateClock();
   </script>
