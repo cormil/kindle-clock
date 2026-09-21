@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="60">
+  <!-- Il meta refresh è stato rimosso per evitare errori di rete -->
   <title>Kindle Clock Landscape</title>
   <style>
     * {
@@ -20,7 +20,6 @@
       position: relative;
     }
     
-    /* Il contenitore che verrà ruotato e ridimensionato da JavaScript */
     #wrapper {
       position: absolute;
       top: 0;
@@ -60,6 +59,7 @@
   <script>
     var giorni = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
     var mesi = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+    var lastTime = ""; // Variabile per tracciare l'ultimo orario mostrato
 
     function updateClock() {
       var d = new Date();
@@ -74,16 +74,21 @@
       var m = d.getMinutes();
       
       if (h < 10) { h = '0' + h; }
-      if (m < 10) { m = '0' + m + ' '; }
+      if (m < 10) { m = '0' + m; }
+      var newTime = h + ':' + m;
       
-      document.getElementById('clock').innerHTML = h + ':' + m;
+      // Aggiorna lo schermo solo se il minuto è effettivamente cambiato
+      if (newTime !== lastTime) {
+        document.getElementById('clock').innerHTML = newTime;
 
-      var giornoSettimana = giorni[d.getDay()];
-      var giornoMese = d.getDate();
-      var mese = mesi[d.getMonth()];
-      var anno = d.getFullYear();
+        var giornoSettimana = giorni[d.getDay()];
+        var giornoMese = d.getDate();
+        var mese = mesi[d.getMonth()];
+        var anno = d.getFullYear();
 
-      document.getElementById('date').innerHTML = giornoSettimana + ', ' + giornoMese + ' ' + mese + ' ' + anno;
+        document.getElementById('date').innerHTML = giornoSettimana + ', ' + giornoMese + ' ' + mese + ' ' + anno;
+        lastTime = newTime;
+      }
     }
     
     function layoutForLandscape() {
@@ -92,20 +97,16 @@
       
       var wrapper = document.getElementById('wrapper');
       
-      // Inverte le dimensioni: la larghezza diventa l'altezza e viceversa
       wrapper.style.width = h + 'px';
       wrapper.style.height = w + 'px';
       
-      // Calcola le coordinate esatte per centrare il contenitore prima di ruotarlo
       var shiftX = (w - h) / 2;
       var shiftY = (h - w) / 2;
       
-      // Applica la rotazione usando il prefisso WebKit per la massima compatibilità col Kindle
       var transformStyle = 'translate(' + shiftX + 'px, ' + shiftY + 'px) rotate(90deg)';
       wrapper.style.webkitTransform = transformStyle;
       wrapper.style.transform = transformStyle;
       
-      // Adatta il font in base alla "nuova" larghezza (che è h)
       if (h > 0) {
         document.getElementById('clock').style.fontSize = Math.floor(h * 0.35) + 'px';
         document.getElementById('date').style.fontSize = Math.floor(h * 0.05) + 'px';
@@ -115,6 +116,9 @@
     // Avvia l'orologio e il layout
     layoutForLandscape();
     updateClock();
+    
+    // Aggiorna l'orologio via Javascript ogni 10 secondi, senza ricaricare la pagina web
+    setInterval(updateClock, 10000);
   </script>
 </body>
 </html>
