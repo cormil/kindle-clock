@@ -2,7 +2,6 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <!-- Il meta refresh è stato rimosso per evitare errori di rete -->
   <title>Kindle Clock Landscape</title>
   <style>
     * {
@@ -59,15 +58,36 @@
   <script>
     var giorni = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
     var mesi = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
-    var lastTime = ""; // Variabile per tracciare l'ultimo orario mostrato
+    var lastTime = "";
+
+    // Funzione per determinare se l'Italia è in ora legale (ultimo domingo di marzo -> ultimo domingo di ottobre)
+    function getItalyOffset(date) {
+      var year = date.getFullYear();
+      
+      // Ultima domenica di marzo
+      var startDst = new Date(year, 2, 31);
+      startDst.setDate(31 - startDst.getDay());
+      startDst.setHours(2, 0, 0, 0);
+      
+      // Ultima domenica di ottobre
+      var endDst = new Date(year, 9, 31);
+      endDst.setDate(31 - endDst.getDay());
+      endDst.setHours(3, 0, 0, 0);
+      
+      if (date >= startDst && date < endDst) {
+        return 2; // Ora legale (UTC+2)
+      } else {
+        return 1; // Ora solare (UTC+1)
+      }
+    }
 
     function updateClock() {
       var d = new Date();
       
-      // Correzione fuso orario di Roma
       if (d.getTimezoneOffset() === 0) {
         var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-        d = new Date(utc + (3600000 * 2)); // Cambiare a 1 in ora solare
+        var currentOffset = getItalyOffset(d);
+        d = new Date(utc + (3600000 * currentOffset));
       }
 
       var h = d.getHours();
@@ -77,7 +97,6 @@
       if (m < 10) { m = '0' + m; }
       var newTime = h + ':' + m;
       
-      // Aggiorna lo schermo solo se il minuto è effettivamente cambiato
       if (newTime !== lastTime) {
         document.getElementById('clock').innerHTML = newTime;
 
@@ -113,11 +132,8 @@
       }
     }
 
-    // Avvia l'orologio e il layout
     layoutForLandscape();
     updateClock();
-    
-    // Aggiorna l'orologio via Javascript ogni 10 secondi, senza ricaricare la pagina web
     setInterval(updateClock, 10000);
   </script>
 </body>
