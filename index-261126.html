@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Kindle Clock Landscape</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #ffffff;
+      color: #000000;
+      font-family: sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    #wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: table;
+      text-align: center;
+      -webkit-transform-origin: center center;
+      transform-origin: center center;
+    }
+
+    .cell {
+      display: table-cell;
+      vertical-align: middle;
+    }
+
+    #clock {
+      font-weight: bold;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+
+    #date {
+      margin-top: 20px;
+      font-weight: normal;
+      text-transform: capitalize;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrapper">
+    <div class="cell">
+      <div id="clock">--:--</div>
+      <div id="date">--</div>
+    </div>
+  </div>
+
+  <script>
+    var giorni = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+    var mesi = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+    var lastTime = "";
+
+    // Funzione per determinare se l'Italia è in ora legale (ultimo domingo di marzo -> ultimo domingo di ottobre)
+    function getItalyOffset(date) {
+      var year = date.getFullYear();
+      
+      // Ultima domenica di marzo
+      var startDst = new Date(year, 2, 31);
+      startDst.setDate(31 - startDst.getDay());
+      startDst.setHours(2, 0, 0, 0);
+      
+      // Ultima domenica di ottobre
+      var endDst = new Date(year, 9, 31);
+      endDst.setDate(31 - endDst.getDay());
+      endDst.setHours(3, 0, 0, 0);
+      
+      if (date >= startDst && date < endDst) {
+        return 2; // Ora legale (UTC+2)
+      } else {
+        return 1; // Ora solare (UTC+1)
+      }
+    }
+
+    function updateClock() {
+      var d = new Date();
+      
+      if (d.getTimezoneOffset() === 0) {
+        var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+        var currentOffset = getItalyOffset(d);
+        d = new Date(utc + (3600000 * currentOffset));
+      }
+
+      var h = d.getHours();
+      var m = d.getMinutes();
+      
+      if (h < 10) { h = '0' + h; }
+      if (m < 10) { m = '0' + m; }
+      var newTime = h + ':' + m;
+      
+      if (newTime !== lastTime) {
+        document.getElementById('clock').innerHTML = newTime;
+
+        var giornoSettimana = giorni[d.getDay()];
+        var giornoMese = d.getDate();
+        var mese = mesi[d.getMonth()];
+        var anno = d.getFullYear();
+
+        document.getElementById('date').innerHTML = giornoSettimana + ', ' + giornoMese + ' ' + mese + ' ' + anno;
+        lastTime = newTime;
+      }
+    }
+    
+    function layoutForLandscape() {
+      var w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+      var h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+      
+      var wrapper = document.getElementById('wrapper');
+      
+      wrapper.style.width = h + 'px';
+      wrapper.style.height = w + 'px';
+      
+      var shiftX = (w - h) / 2;
+      var shiftY = (h - w) / 2;
+      
+      var transformStyle = 'translate(' + shiftX + 'px, ' + shiftY + 'px) rotate(90deg)';
+      wrapper.style.webkitTransform = transformStyle;
+      wrapper.style.transform = transformStyle;
+      
+      if (h > 0) {
+        document.getElementById('clock').style.fontSize = Math.floor(h * 0.35) + 'px';
+        document.getElementById('date').style.fontSize = Math.floor(h * 0.05) + 'px';
+      }
+    }
+
+    layoutForLandscape();
+    updateClock();
+    setInterval(updateClock, 10000);
+  </script>
+</body>
+</html>
