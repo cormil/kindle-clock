@@ -41,9 +41,14 @@
     }
 
     #date {
-      margin-top: 20px;
+      margin-top: 16px;
       font-weight: normal;
       text-transform: capitalize;
+    }
+
+    #weather {
+      margin-top: 12px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -52,6 +57,7 @@
     <div class="cell">
       <div id="clock">--:--</div>
       <div id="date">--</div>
+      <div id="weather">Meteo: --</div>
     </div>
   </div>
 
@@ -60,25 +66,75 @@
     var mesi = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
     var lastTime = "";
 
-    // Funzione per determinare se l'Italia è in ora legale (ultimo domingo di marzo -> ultimo domingo di ottobre)
+    // Coordinate di Roma
+    var lat = 41.9028;
+    var lon = 12.4964;
+
     function getItalyOffset(date) {
       var year = date.getFullYear();
       
-      // Ultima domenica di marzo
       var startDst = new Date(year, 2, 31);
       startDst.setDate(31 - startDst.getDay());
       startDst.setHours(2, 0, 0, 0);
       
-      // Ultima domenica di ottobre
       var endDst = new Date(year, 9, 31);
       endDst.setDate(31 - endDst.getDay());
       endDst.setHours(3, 0, 0, 0);
       
       if (date >= startDst && date < endDst) {
-        return 2; // Ora legale (UTC+2)
+        return 2;
       } else {
-        return 1; // Ora solare (UTC+1)
+        return 1;
       }
+    }
+
+    function getWeatherDescription(code) {
+      if (code === 0) return 'Sereno';
+      if (code === 1 || code === 2) return 'Poco nuvoloso';
+      if (code === 3) return 'Nuvoloso';
+      if (code === 45 || code === 48) return 'Nebbia';
+      if (code >= 51 && code <= 57) return 'Pioviggine';
+      if (code >= 61 && code <= 67) return 'Pioggia';
+      if (code >= 71 && code <= 77) return 'Neve';
+      if (code >= 80 && code <= 82) return 'Rovesci';
+      if (code >= 85 && code <= 86) return 'Rovesci neve';
+      if (code >= 95) return 'Temporale';
+      return 'Variabile';
+    }
+
+    function updateWeather() {
+      var url = 'https://api.open-meteo.com/v1/forecast' +
+                '?latitude=' + lat +
+                '&longitude=' + lon +
+                '&current=temperature_2m,weather_code' +
+                '&daily=weather_code,temperature_2m_max,temperature_2m_min' +
+                '&timezone=Europe%2FRome' +
+                '&forecast_days=1';
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.timeout = 10000;
+
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200 && xhr.responseText) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              var currTemp = Math.round(data.current.temperature_2m);
+              var minTemp = Math.round(data.daily.temperature_2m_min[0]);
+              var maxTemp = Math.round(data.daily.temperature_2m_max[0]);
+              var desc = getWeatherDescription(data.daily.weather_code[0]);
+
+              document.getElementById('weather').innerHTML =
+                desc + ' · ' + currTemp + '° (min ' + minTemp + '° / max ' + maxTemp + '°)';
+            } catch (e) {
+              // Mantiene l'ultimo valore valido in caso di errore di parsing
+            }
+          }
+        }
+      };
+
+      xhr.send(null);
     }
 
     function updateClock() {
@@ -127,14 +183,18 @@
       wrapper.style.transform = transformStyle;
       
       if (h > 0) {
-        document.getElementById('clock').style.fontSize = Math.floor(h * 0.35) + 'px';
-        document.getElementById('date').style.fontSize = Math.floor(h * 0.05) + 'px';
+        document.getElementById('clock').style.fontSize = Math.floor(h * 0.30) + 'px';
+        document.getElementById('date').style.fontSize = Math.floor(h * 0.045) + 'px';
+        document.getElementById('weather').style.fontSize = Math.floor(h * 0.04) + 'px';
       }
     }
 
     layoutForLandscape();
     updateClock();
+    updateWeather();
+
     setInterval(updateClock, 10000);
+    setInterval(updateWeather, 1800000); // Aggiorna il meteo ogni 30 minuti
   </script>
 </body>
 </html>
